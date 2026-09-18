@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pro Shift & Time Duration Calculator</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-glow: rgba(99, 102, 241, 0.35);
+      --card-bg: rgba(20, 21, 26, 0.88);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.6);
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --input-bg: rgba(10, 11, 14, 0.9);
+      --accent-green: #10b981;
+      --radius: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 16px;
+      color: var(--text-main);
+
+      /* High-Definition Dark Fabric / Carbon Weave */
+      background-color: #0b0c10;
+      background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(56, 58, 89, 0.3) 0%, rgba(11, 12, 16, 0.95) 75%),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 6px),
+        repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.5) 0px, rgba(0, 0, 0, 0.5) 1px, transparent 1px, transparent 6px),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.015) 0px, rgba(255, 255, 255, 0.015) 2px, transparent 2px, transparent 4px);
+      background-size: 100% 100%, 6px 6px, 6px 6px, 4px 4px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius);
+      padding: 34px 28px;
+      box-shadow: 
+        0 30px 70px rgba(0, 0, 0, 0.8),
+        0 10px 20px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+
+    .header p {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Tactile Debossed Switch Well */
+    .mode-selector {
+      display: flex;
+      background: #090a0d;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 5px;
+      margin-bottom: 22px;
+      box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.7), inset 0 1px 2px rgba(0, 0, 0, 0.9);
+    }
+
+    /* Tactile Mode Push-Buttons */
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.85rem;
+      border-radius: 10px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mode-btn:hover:not(.active) {
+      color: #d1d5db;
+    }
+
+    .mode-btn.active {
+      color: #fff;
+      background: linear-gradient(180deg, #2c2f38 0%, #1e2027 100%);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 
+        0 4px 10px rgba(0, 0, 0, 0.5),
+        0 2px 3px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      transform: translateY(-0.5px);
+    }
+
+    .mode-btn.active:active {
+      transform: translateY(1.5px);
+      box-shadow: 
+        0 1px 2px rgba(0, 0, 0, 0.6),
+        inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Input Blocks */
+    .time-group {
+      margin-bottom: 16px;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 7px;
+    }
+
+    .label-row label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+    }
+
+    /* Tactile Mini Button ("Current Time") */
+    .quick-btn {
+      background: linear-gradient(180deg, #242630 0%, #16171d 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid rgba(255, 255, 255, 0.22);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.8);
+      color: #a5b4fc;
+      border-radius: 7px;
+      padding: 4px 9px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.45);
+      transition: all 0.08s ease;
+    }
+
+    .quick-btn:hover {
+      color: #c7d2fe;
+      border-top-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .quick-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(0, 0, 0, 0.6);
+      border-top-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Sunken/Recessed Wells for Inputs */
+    .time-input-wrap, .standard-input-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-top: 1px solid rgba(0, 0, 0, 0.9);
+      border-radius: 12px;
+      padding: 0 12px;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.65);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .time-input-wrap:focus-within, .standard-input-wrap:focus-within {
+      border-color: var(--border-focus);
+      box-shadow: 
+        0 0 0 3px var(--primary-glow),
+        inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .time-input-wrap input, .standard-input-wrap input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 1.15rem;
+      font-weight: 500;
+      text-align: center;
+      padding: 11px 0;
+      user-select: auto;
+    }
+
+    .separator {
+      color: var(--text-muted);
+      font-weight: 700;
+      padding: 0 4px;
+    }
+
+    /* Tactile Beveled Dropdowns */
+    select.ampm-select, select.currency-select {
+      background: linear-gradient(180deg, #262833 0%, #17181f 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.8);
+      color: #fff;
+      border-radius: 12px;
+      padding: 0 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    select.ampm-select:active:not(:disabled), select.currency-select:active {
+      transform: translateY(1.5px);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    }
+
+    select.ampm-select {
+      width: 82px;
+    }
+
+    select.currency-select {
+      width: 60px;
+      margin-right: 8px;
+    }
+
+    select:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Addon Grid */
+    .addon-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+      margin-bottom: 20px;
+    }
+
+    .addon-box label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+    }
+
+    /* Sunken Instrument Cluster Result Panel */
+    .result-container {
+      margin-top: 20px;
+      padding: 22px 20px;
+      background: #090a0d;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 
+        inset 0 3px 8px rgba(0, 0, 0, 0.8),
+        inset 0 1px 2px rgba(0, 0, 0, 0.9);
+    }
+
+    .main-duration {
+      font-size: 1.95rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+    }
+
+    .pay-highlight {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent-green);
+      text-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+    }
+
+    .sub-duration {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 5px 10px;
+      border-radius: 8px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+
+    .badge span {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .next-day-alert {
+      font-size: 0.78rem;
+      color: #38bdf8;
+      display: none;
+    }
+
+    /* Heavy Tactile Push Button ("Copy Shift Summary") */
+    .tactile-action-btn {
+      width: 100%;
+      background: linear-gradient(180deg, #2b2e38 0%, #1a1b22 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid rgba(255, 255, 255, 0.28);
+      border-bottom: 2px solid rgba(0, 0, 0, 0.9);
+      color: #f3f4f6;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 
+        0 6px 16px rgba(0, 0, 0, 0.6),
+        0 2px 4px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      transition: all 0.08s ease;
+      position: relative;
+    }
+
+    .tactile-action-btn:hover {
+      background: linear-gradient(180deg, #323642 0%, #20212b 100%);
+      border-top-color: rgba(255, 255, 255, 0.38);
+      color: #fff;
+    }
+
+    .tactile-action-btn:active {
+      transform: translateY(3px);
+      box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.7),
+        inset 0 2px 6px rgba(0, 0, 0, 0.7);
+      border-top-color: rgba(255, 255, 255, 0.08);
+      border-bottom-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .tactile-action-btn.copied {
+      color: var(--accent-green);
+      border-top-color: rgba(16, 185, 129, 0.5);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>Time &amp; Pay Calculator</h1>
+      <p>Precision shift, duration, and earnings calculator</p>
+    </div>
+
+    <!-- Mode Selector -->
+    <div class="mode-selector">
+      <button type="button" class="mode-btn active" id="btn12" onclick="setFormat('12')">12 Hours (AM / PM)</button>
+      <button type="button" class="mode-btn" id="btn24" onclick="setFormat('24')">24 Hours</button>
+    </div>
+
+    <!-- IN TIME -->
+    <div class="time-group">
+      <div class="label-row">
+        <label>In Time</label>
+        <button class="quick-btn" type="button" onclick="fillNow('in')">Current Time</button>
+      </div>
+      <div class="input-row">
+        <div class="time-input-wrap">
+          <input type="number" id="inHour" placeholder="09" min="0" max="23" value="09" />
+          <span class="separator">:</span>
+          <input type="number" id="inMin" placeholder="00" min="0" max="59" value="00" />
+        </div>
+        <select id="inAmpm" class="ampm-select">
+          <option value="AM" selected>AM</option>
+          <option value="PM">PM</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- OUT TIME -->
+    <div class="time-group">
+      <div class="label-row">
+        <label>Out Time</label>
+        <button class="quick-btn" type="button" onclick="fillNow('out')">Current Time</button>
+      </div>
+      <div class="input-row">
+        <div class="time-input-wrap">
+          <input type="number" id="outHour" placeholder="05" min="0" max="23" value="05" />
+          <span class="separator">:</span>
+          <input type="number" id="outMin" placeholder="30" min="0" max="59" value="30" />
+        </div>
+        <select id="outAmpm" class="ampm-select">
+          <option value="AM">AM</option>
+          <option value="PM" selected>PM</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ADDONS: Break & Hourly Rate -->
+    <div class="addon-grid">
+      <div class="addon-box">
+        <label>Unpaid Break (mins)</label>
+        <div class="standard-input-wrap">
+          <input type="number" id="breakMinutes" placeholder="0" min="0" value="30" />
+        </div>
+      </div>
+      <div class="addon-box">
+        <label>Hourly Wage (Optional)</label>
+        <div class="standard-input-wrap" style="padding-left: 6px;">
+          <select id="currency" class="currency-select">
+            <option value="₹">₹</option>
+            <option value="$" selected>$</option>
+            <option value="€">€</option>
+            <option value="£">£</option>
+            <option value="AED">AED</option>
+          </select>
+          <input type="number" id="hourlyRate" placeholder="0.00" min="0" step="0.5" value="25" />
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS DISPLAY -->
+    <div class="result-container">
+      <div class="main-duration" id="durationText">0h 0m</div>
+      <div id="payRow" class="pay-highlight" style="display: none;"></div>
+
+      <div class="sub-duration">
+        <div class="badge">Net Decimal: <span id="decimalText">0.00 hrs</span></div>
+        <div class="badge">Gross: <span id="grossText">0.00 hrs</span></div>
+        <div class="badge">Net Minutes: <span id="totalMinutesText">0m</span></div>
+      </div>
+      <div class="next-day-alert" id="overnightNotice">⟳ Overnight span (ends on next day)</div>
+
+      <!-- Tactile Action Button -->
+      <button class="tactile-action-btn" id="copyBtn" onclick="copySummary()">
+        <span>📋</span> Copy Shift Summary
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let currentFormat = '12';
+
+    // Synthetic Tactile Click via Web Audio API
+    function playTactileClick() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(140, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.035);
+        
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.035);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.035);
+      } catch (e) {
+        // AudioContext restricted or not allowed
+      }
+    }
+
+    // Attach click audio feedback to buttons
+    document.querySelectorAll('button, select').forEach(elem => {
+      elem.addEventListener('mousedown', playTactileClick);
+    });
+
+    function setFormat(fmt) {
+      currentFormat = fmt;
+      const btn12 = document.getElementById('btn12');
+      const btn24 = document.getElementById('btn24');
+      const inAmpm = document.getElementById('inAmpm');
+      const outAmpm = document.getElementById('outAmpm');
+      const inHour = document.getElementById('inHour');
+      const outHour = document.getElementById('outHour');
+
+      if (fmt === '12') {
+        btn12.classList.add('active');
+        btn24.classList.remove('active');
+        inAmpm.disabled = false;
+        outAmpm.disabled = false;
+        inHour.max = 12;
+        outHour.max = 12;
+        if (parseInt(inHour.value) > 12) inHour.value = 12;
+        if (parseInt(outHour.value) > 12) outHour.value = 12;
+      } else {
+        btn24.classList.add('active');
+        btn12.classList.remove('active');
+        inAmpm.disabled = true;
+        outAmpm.disabled = true;
+        inHour.max = 23;
+        outHour.max = 23;
+      }
+      calculateDuration();
+    }
+
+    function fillNow(target) {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+
+      if (currentFormat === '12') {
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        document.getElementById(target + 'Ampm').value = ampm;
+      }
+
+      document.getElementById(target + 'Hour').value = String(hours).padStart(2, '0');
+      document.getElementById(target + 'Min').value = String(minutes).padStart(2, '0');
+      calculateDuration();
+    }
+
+    function parseToMinutes(hourVal, minVal, ampmVal, format) {
+      let h = parseInt(hourVal, 10) || 0;
+      let m = parseInt(minVal, 10) || 0;
+
+      if (format === '12') {
+        h = h % 12;
+        if (ampmVal === 'PM') h += 12;
+      }
+      return (h * 60) + m;
+    }
+
+    function calculateDuration() {
+      const inH = document.getElementById('inHour').value;
+      const inM = document.getElementById('inMin').value;
+      const inAmpm = document.getElementById('inAmpm').value;
+
+      const outH = document.getElementById('outHour').value;
+      const outM = document.getElementById('outMin').value;
+      const outAmpm = document.getElementById('outAmpm').value;
+
+      const breakMins = parseInt(document.getElementById('breakMinutes').value, 10) || 0;
+      const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+      const currency = document.getElementById('currency').value;
+
+      const inTotalMin = parseToMinutes(inH, inM, inAmpm, currentFormat);
+      const outTotalMin = parseToMinutes(outH, outM, outAmpm, currentFormat);
+
+      let grossMinutes = outTotalMin - inTotalMin;
+      const overnightNotice = document.getElementById('overnightNotice');
+
+      if (grossMinutes < 0) {
+        grossMinutes += 24 * 60;
+        overnightNotice.style.display = 'block';
+      } else {
+        overnightNotice.style.display = 'none';
+      }
+
+      let netMinutes = Math.max(0, grossMinutes - breakMins);
+
+      const netHours = Math.floor(netMinutes / 60);
+      const netMinsRem = netMinutes % 60;
+      const netDecimal = (netMinutes / 60).toFixed(2);
+      const grossDecimal = (grossMinutes / 60).toFixed(2);
+
+      document.getElementById('durationText').innerText = `${netHours}h ${netMinsRem}m`;
+      document.getElementById('decimalText').innerText = `${netDecimal} hrs`;
+      document.getElementById('grossText').innerText = `${grossDecimal} hrs`;
+      document.getElementById('totalMinutesText').innerText = `${netMinutes}m`;
+
+      const payRow = document.getElementById('payRow');
+      if (hourlyRate > 0) {
+        const totalEarnings = ((netMinutes / 60) * hourlyRate).toFixed(2);
+        payRow.innerText = `Earnings: ${currency}${Number(totalEarnings).toLocaleString()}`;
+        payRow.style.display = 'block';
+      } else {
+        payRow.style.display = 'none';
+      }
+    }
+
+    function copySummary() {
+      const duration = document.getElementById('durationText').innerText;
+      const decimal = document.getElementById('decimalText').innerText;
+      const breakMins = document.getElementById('breakMinutes').value || 0;
+      const payRow = document.getElementById('payRow');
+      
+      let textToCopy = `Shift Duration: ${duration} (${decimal})\nBreak: ${breakMins} mins`;
+      if (payRow.style.display !== 'none') {
+        textToCopy += `\n${payRow.innerText}`;
+      }
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const copyBtn = document.getElementById('copyBtn');
+        copyBtn.innerHTML = `<span>✓</span> Copied to Clipboard!`;
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.innerHTML = `<span>📋</span> Copy Shift Summary`;
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', calculateDuration);
+      el.addEventListener('change', calculateDuration);
+    });
+
+    window.onload = calculateDuration;
+  </script>
+</body>
+</html>
